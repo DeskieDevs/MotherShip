@@ -1,11 +1,12 @@
 import { client, Command } from "../index"
 import Discord from "discord.js"
+import { errorColor } from "../config.json"
+import ms from "ms"
 
 client.on("interactionCreate", async interaction => {
-    let command: Command | null = null
     if (!interaction.isCommand() || interaction.user.bot) return
-
-    command = client.commands.get(interaction.commandName)!
+    let command: Command = client.commands.get(interaction.commandName)!
+    if (!command) return
 
     //Log if command is ran in DMs
     if (interaction.channel?.type === "DM") console.log(`${interaction.user.tag} used command ${interaction.commandName} in DMs`)
@@ -21,11 +22,24 @@ client.on("interactionCreate", async interaction => {
         else if (command.channelWhitelist && !command.channelWhitelist.includes(interaction.channelId)) allowed = false
     }
 
-    if (!client.cooldowns.has(command.name)) client.cooldowns.set(command.name, new Discord.Collection())
+    if (client.cooldowns.has(`${interaction.user.id}-${command.name}`)) {
+        const cooldown = client.cooldowns.get(`${interaction.user.id}-${command.name}`)
+        if (cooldown !== undefined) {
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("Cooldown!")
+                .setColor(errorColor as Discord.HexColorString)
+                .setDescription(`${ms(cooldown - Date.now(), { long: true })}`)
+            return await interaction.reply({ embeds: [embed], ephemeral: true })
+        }
+    }
     //Run command and handle errors
     try {
         // Run the command
         await command.execute(interaction)
+        if (command.cooldown?.toFixed()) client.cooldowns.set(`${interaction.user.id}-${command.name}`, Date.now() + command.cooldown)
+        setTimeout(() => {
+            client.cooldowns.delete(`${interaction.user.id}-${command.name}`)
+        }, command.cooldown)
 
         let reply: Discord.Message | null = null
         if (!interaction.ephemeral && interaction.replied) reply = (await interaction.fetchReply()) as Discord.Message
