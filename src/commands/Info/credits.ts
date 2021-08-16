@@ -23,7 +23,7 @@ const command: Command = {
                 },
                 {
                     name: "Bugs & Issues",
-                    value: "If you experience any bugs & or issues please do /report <issue>"
+                    value: "If you experience any bugs & or issues please do /report <subject>"
                 },
                 {
                     name: "Contact",

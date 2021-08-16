@@ -1,5 +1,5 @@
 import { client, Command } from "../index"
-import Discord, { Interaction } from "discord.js"
+import Discord from "discord.js"
 import { isEqual } from "lodash"
 
 client.once("ready", async () => {
@@ -45,13 +45,13 @@ async function publishCommand(command: Command) {
 async function setPermissions(command: Discord.ApplicationCommand<{ guild: Discord.GuildResolvable }>) {
     const permissions: Discord.ApplicationCommandPermissionData[] = [],
         clientCmd = client.commands.get(command.name)!
-    if (clientCmd.dev) {
+    if (clientCmd.dev)
         permissions.push({
             type: "ROLE",
             id: "874824205630324766" && "876870800689475594", //Discord Staff
             permission: true
         })
-    } else {
+    else {
         clientCmd.roleWhitelist?.forEach(id => {
             //Add whitelisted roles
             permissions.push({
