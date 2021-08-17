@@ -6,7 +6,6 @@ const command: Command = {
     name: "credits",
     description: "Credits of the bot maker",
     cooldown: 1000 * 60,
-    allowDM: true,
     async execute(interaction) {
         const embed = new Discord.MessageEmbed()
             .setColor(neutralColor as Discord.HexColorString)

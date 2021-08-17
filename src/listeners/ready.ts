@@ -7,18 +7,17 @@ client.once("ready", async () => {
 
     //Only update global commands in production
     const globalCommands = await client.application!.commands.fetch()
-    //console.log(client.commands)
     client.commands
         .filter(c => !!c.allowDM)
         .forEach(async command => {
             if (!globalCommands) await publishCommand(command)
             else {
                 const discordCommand = globalCommands.find(c => c.name === command.name)!
-                //Chech if the command is published
+                //Check if the command is published
                 if (!globalCommands.some(cmd => cmd.name === command.name)) await publishCommand(command)
                 else if (!commandEquals(discordCommand, command)) {
                     await discordCommand.edit(convertToDiscordCommand(command))
-                    console.log(`[~Command log~] Edited command ${command.name} since changes were found\n`, discordCommand, command)
+                    console.log(`Edited command ${command.name} since changes were found\n`, discordCommand, command)
                 }
             }
         })
@@ -26,20 +25,24 @@ client.once("ready", async () => {
     globalCommands.forEach(async command => {
         if (!client.commands.get(command.name)) {
             await command.delete()
-            console.log(`[~Command log~] Deleted command ${command.name} as it was deleted locally.`)
+            console.log(`Deleted command ${command.name} as it was deleted locally.`)
         } else if (!client.commands.get(command.name)?.allowDM) {
             await command.delete()
-            console.log(`[~Command log~] Deleted command ${command.name} globally as it is no longer allowed in DMs`)
+            console.log(`Deleted command ${command.name} globally as it is no longer allowed in DMs`)
         }
     })
 
-    //Change status and run events every minute
+    //Set guild commands - these don't need checks since they update instantly
+    client.guilds.cache
+        .get("874799781766111234")!
+        .commands.set(constructDiscordCommands())
+        .then(commands => commands.forEach(async command => await setPermissions(command)))
 })
 
 async function publishCommand(command: Command) {
     const cmd = await client.application!.commands.create(convertToDiscordCommand(command))
     await setPermissions(cmd)
-    console.log(`[~Command log~] Published command ${command.name}!`)
+    console.log(`Published command ${command.name}!`)
 }
 
 async function setPermissions(command: Discord.ApplicationCommand<{ guild: Discord.GuildResolvable }>) {
@@ -48,7 +51,7 @@ async function setPermissions(command: Discord.ApplicationCommand<{ guild: Disco
     if (clientCmd.dev)
         permissions.push({
             type: "ROLE",
-            id: "874824205630324766" && "876870800689475594", //Discord Staff
+            id: "876870800689475594", //Discord Staff
             permission: true
         })
     else {
@@ -69,19 +72,19 @@ async function setPermissions(command: Discord.ApplicationCommand<{ guild: Disco
             })
         })
     }
-    if (permissions.length) await command.permissions.set({ permissions, guild: "874799781766111234" })
+    if (permissions.length) await command.permissions.set({ permissions, guild: "549503328472530974" })
 }
 
 function constructDiscordCommands() {
     const returnCommands: Discord.ApplicationCommandData[] = []
     let clientCommands = client.commands
-    if (process.env.NODE_ENV === "production") clientCommands = clientCommands.filter(cmd => !cmd.allowDM)
+    clientCommands = clientCommands.filter(cmd => !cmd.allowDM)
     clientCommands.forEach(c => returnCommands.push(convertToDiscordCommand(c)))
 
     return returnCommands
 }
 
-function convertToDiscordCommand(command: Command): Discord.ApplicationCommandData {
+function convertToDiscordCommand(command: Command): Discord.ChatInputApplicationCommandData {
     return {
         name: command.name,
         description: command.description,

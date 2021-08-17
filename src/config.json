@@ -5,5 +5,8 @@
     "neutralColor": "#bfbdbd",
     "zergIcon": "https://liquipedia.net/commons/images/d/d1/ZergIcon.png",
     "terranIcon": "https://liquipedia.net/commons/images/9/94/TerranIcon.png",
-    "protossIcon": "https://liquipedia.net/commons/images/e/e4/ProtossIcon.png"
+    "protossIcon": "https://liquipedia.net/commons/images/e/e4/ProtossIcon.png",
+    "channels": {
+        "bug-reports": "877157116354371647"
+    }
 }
